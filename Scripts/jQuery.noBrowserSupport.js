@@ -3,11 +3,11 @@
     var bName = $.trim(browserInfo.name.toLowerCase());
     var bVersion = $.trim(browserInfo.version);
     var browserSupported = true;
-    
-    if (bName === "chrome" && parseInt(bVersion) < 42) {
+
+    if (bName === "chrome" && parseInt(bVersion) < 35) {
         browserSupported = false;
     }
-    else if (bName === "ie" && parseInt(bVersion) < 9) {
+    else if ((bName === "ie" || bName === "msie") && parseInt(bVersion) < 9) {
         browserSupported = false;
     }
     else if (bName === "firefox" && parseInt(bVersion) < 29) {
@@ -40,21 +40,31 @@ function get_browser_info() {
 }
 
 function rewrite_doc_browser_not_support() {
-    $('head').append('<link rel="stylesheet" type="text/css" href="http://plugins.spanenterprises.com/content/se.browsersupport.plugin.css">');
+    var scripts = document.getElementsByTagName('script');
+    var index = scripts.length - 1;
+    var myScript = scripts[index];
 
-    var noSupportHtml = '<div id="no-bSupport-center-wrap"><div id="no-bSupport-center"><div class="no-bSupport-Logo"><img id="no-bSupport-img" src="/Content/Images/anonymous.png" /></div></div></div>';
+    var bSupportKeyword = "jQuery.noBrowserSupport.js";
+    $(scripts).filter(function (keyword) {
+        if ($(this).attr("src") != null && $(this).attr("src") != '' && $(this).attr("src").toLowerCase().indexOf(bSupportKeyword.toLowerCase()) != -1) {
+            myScript = $(this)[0];
+        }
+    });
+    var bSupportScriptUrl = myScript.src.toLowerCase();
+    var bSupportBaseUrl = bSupportScriptUrl.substr(0, bSupportScriptUrl.indexOf(bSupportKeyword.toLowerCase())).toLowerCase().replace("scripts/", "");
+
+    $('head').append('<link rel="stylesheet" type="text/css" href="' + bSupportBaseUrl + 'Content/jQuery.noBrowserSupport.css">');
+
+    var noSupportHtml = '<div id="no-bSupport-center-wrap"><div id="no-bSupport-center"><div class="no-bSupport-Logo"><img id="no-bSupport-img" src="/Content/images/anonymous.png" /></div></div></div>';
     noSupportHtml += '<div class="no-bSupport-clear"></div><div id="no-bSupport-content">';
     noSupportHtml += '<div class="no-bSupport-clear no-bSupport-taC no-bSupport-titleText">OOPS!</div>';
     noSupportHtml += '<div class="no-bSupport-clear no-bSupport-taC no-bSupport-titleText">YOUR BROWSER IS NOT SUPPORTED!</div>';
     noSupportHtml += '<div class="no-bSupport-clear no-bSupport-taC no-bSupport-detText">Don\'t worry, there is an easy fix. Try upgrading to any of the following versions:</div>';
-    noSupportHtml += '<div class="no-bSupport-clear no-bSupport-taC no-bSupport-iconText"><a href="https://www.google.com/intl/en/chrome/browser/desktop/index.html" target="_blank"><img src="http://plugins.spanenterprises.com/Content/Images/bSupport/chrome.png" /></a> <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank"><img src="http://plugins.spanenterprises.com/Content/Images/bSupport/firefox.png" /></a> <a href="https://support.apple.com/kb/dl1531" target="_blank"><img src="http://plugins.spanenterprises.com/Content/Images/bSupport/safari.png" /></a> <a href="http://windows.microsoft.com/en-us/internet-explorer/download-ie" target="_blank"><img src="http://plugins.spanenterprises.com/Content/Images/bSupport/ie.png" /></a></div>';
+    noSupportHtml += '<div class="no-bSupport-clear no-bSupport-taC no-bSupport-iconText"><a href="https://www.google.com/intl/en/chrome/browser/desktop/index.html" target="_blank"><img src="' + bSupportBaseUrl + 'Content/images/bSupport/chrome.png" /></a> <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank"><img src="' + bSupportBaseUrl + 'Content/images/bSupport/firefox.png" /></a> <a href="https://support.apple.com/kb/dl1531" target="_blank"><img src="' + bSupportBaseUrl + 'Content/images/bSupport/safari.png" /></a> <a href="http://windows.microsoft.com/en-us/internet-explorer/download-ie" target="_blank"><img src="' + bSupportBaseUrl + 'Content/images/bSupport/ie.png" /></a></div>';
     noSupportHtml += '</div>';
     
     document.body.innerHTML = noSupportHtml;
-
-    var scripts = document.getElementsByTagName('script');
-    var index = scripts.length - 1;
-    var myScript = scripts[index];
+    
     // myScript now contains our script object
     var queryString = myScript.src.replace(/^[^\?]+\??/, '');
     var qs = bSupportParseQuery(queryString);
